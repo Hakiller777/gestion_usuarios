@@ -1,9 +1,21 @@
+using Backend.Data;          // Para AppDbContext
+using Backend.Repositories;  // Para UserRepository
+using Microsoft.EntityFrameworkCore; // Para UseNpgsql
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Inyección del DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Inyección del repositorio
+builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 
