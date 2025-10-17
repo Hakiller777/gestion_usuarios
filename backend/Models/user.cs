@@ -1,7 +1,7 @@
 // Importa las anotaciones para validaciones y claves primarias
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Models
+namespace backend.Models //Referenciamos a la carpeta donde estamos 
 {
     // Clase que representa un usuario dentro del sistema
     public class User
@@ -11,19 +11,19 @@ namespace Backend.Models
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
-        public string Name { get; set; } // Nombre completo del usuario
+        public string Name { get; set; } = string.Empty;// Nombre completo del usuario
 
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "El formato del email es inválido")]
         [StringLength(150, ErrorMessage = "El email no puede exceder 150 caracteres")]
-        public string Email { get; set; } // Email del usuario
+        public string Email { get; set; } = string.Empty; // Email del usuario
 
         [Required(ErrorMessage = "La contraseña es obligatoria")]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 100 caracteres")]
-        public string Password { get; set; } // Contraseña del usuario (recomendado hashear)
+        public string Password { get; set; } = string.Empty; // Contraseña del usuario (recomendado hashear)
 
         // Ejemplo opcional: confirmación de contraseña (no se guarda en DB)
         [Compare("Password", ErrorMessage = "La confirmación de contraseña no coincide")]
-        public string ConfirmPassword { get; set; } 
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

@@ -1,9 +1,9 @@
 // Importa modelos y contexto
-using Backend.Models;
-using Backend.Data;
+using backend.Models;
+using backend.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Repositories
+namespace backend.Repositories
 {
     // Clase que maneja la lógica de acceso a datos de los usuarios
     public class UserRepository

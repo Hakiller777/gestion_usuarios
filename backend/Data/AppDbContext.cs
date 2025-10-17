@@ -1,10 +1,10 @@
 // Importa los modelos que usaremos en la base de datos
-using Backend.Models;
+using backend.Models;
 
 // Importa Entity Framework Core para DbContext
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Data
+namespace backend.Data
 {
     // Clase que representa el contexto de la base de datos
     // Hereda de DbContext, que es el componente principal de EF Core

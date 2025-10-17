@@ -1,5 +1,5 @@
-using Backend.Data;          // Para AppDbContext
-using Backend.Repositories;  // Para UserRepository
+using backend.Data;          // Para AppDbContext
+using backend.Repositories;  // Para UserRepository
 using Microsoft.EntityFrameworkCore; // Para UseNpgsql
 
 
