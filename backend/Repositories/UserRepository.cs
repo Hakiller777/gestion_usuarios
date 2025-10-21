@@ -8,7 +8,7 @@ namespace backend.Repositories
     // Clase que maneja la lógica de acceso a datos de los usuarios
     public class UserRepository
     {
-        private readonly AppDbContext _context; // Contexto de la DB, inyectado desde Program.cs
+        private readonly AppDbContext _context; // Contexto de la DB, inyectado desde Program.cs 
 
         // Constructor: inyectamos el DbContext
         public UserRepository(AppDbContext context)

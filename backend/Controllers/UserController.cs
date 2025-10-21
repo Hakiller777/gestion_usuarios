@@ -1,39 +1,35 @@
-// Importa modelos, repositorios y utilidades de ASP.NET Core
 using backend.Models;
-using backend.Repositories;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
-    // Anotación [ApiController] indica que es un controlador Web API
-    // [Route("api/[controller]")] genera rutas automáticas, ej: /api/user
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserRepository _repository;
+        private readonly UserService _userService;
 
-        // Constructor: inyecta el repositorio
-        public UserController(UserRepository repository)
+        public UserController(UserService userService)
         {
-            _repository = repository;
+            _userService = userService;
         }
 
         // GET: api/user
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetAll()
         {
-            var users = await _repository.GetAllAsync();
-            return Ok(users); // Retorna 200 OK con la lista de usuarios
+            var users = await _userService.GetAllUsersAsync();
+            return Ok(users);
         }
 
         // GET: api/user/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetById(int id)
         {
-            var user = await _repository.GetByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
-                return NotFound(); // Retorna 404 si no existe
+                return NotFound();
             return Ok(user);
         }
 
@@ -41,7 +37,7 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> Create(User user)
         {
-            var createdUser = await _repository.AddAsync(user);
+            var createdUser = await _userService.CreateUserAsync(user);
             return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
         }
 
@@ -50,11 +46,11 @@ namespace backend.Controllers
         public async Task<ActionResult<User>> Update(int id, User user)
         {
             if (id != user.Id)
-                return BadRequest(); // 400 si el id de la URL no coincide con el del cuerpo
+                return BadRequest();
 
-            var updatedUser = await _repository.UpdateAsync(user);
+            var updatedUser = await _userService.UpdateUserAsync(user);
             if (updatedUser == null)
-                return NotFound(); // 404 si no existe el usuario
+                return NotFound();
 
             return Ok(updatedUser);
         }
@@ -63,10 +59,11 @@ namespace backend.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _repository.DeleteAsync(id);
+            var result = await _userService.DeleteUserAsync(id);
             if (!result)
-                return NotFound(); // 404 si no existe
-            return NoContent(); // 204 si se eliminó correctamente
+                return NotFound();
+
+            return NoContent();
         }
     }
 }

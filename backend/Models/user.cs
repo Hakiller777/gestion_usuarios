@@ -1,4 +1,4 @@
-// Importa las anotaciones para validaciones y claves primarias
+// Importa las anotaciones para validaciones y claves primarias 
 using System.ComponentModel.DataAnnotations;
 
 namespace backend.Models //Referenciamos a la carpeta donde estamos 

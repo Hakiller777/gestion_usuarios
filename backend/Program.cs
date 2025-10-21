@@ -1,5 +1,7 @@
 using backend.Data;          // Para AppDbContext
-using backend.Repositories;  // Para UserRepository
+using backend.Models;
+using backend.Repositories;  // Para los Repositorios
+using backend.Services;      // Para los Servicios
 using Microsoft.EntityFrameworkCore; // Para UseNpgsql
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,22 +15,32 @@ builder.Services.AddControllers();
 // --------------------
 // INYECCIÓN DEL DBCONTEXT
 // --------------------
-// Modificado: Se agregó AppDbContext con conexión a PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // --------------------
-// INYECCIÓN DEL REPOSITORIO
+// INYECCIÓN DE REPOSITORIOS
 // --------------------
-// Modificado: Se agregó UserRepository como servicio Scoped
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<PermissionRepository>();
+builder.Services.AddScoped<UserRoleRepository>();
+builder.Services.AddScoped<RolePermissionRepository>();
+
+// --------------------
+// INYECCIÓN DE SERVICIOS
+// --------------------
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<PermissionService>();
+builder.Services.AddScoped<UserRoleService>();
+builder.Services.AddScoped<RolePermissionService>();
 
 var app = builder.Build();
 
 // --------------------
 // SWAGGER
 // --------------------
-// Ya estaba, solo confirmamos que se usa en Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -36,12 +48,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.MapControllers();
+
 // --------------------
 // POBLADO INICIAL DE LA BASE DE DATOS
 // --------------------
-// Modificado: Se agregó DbSeeder para crear 50 usuarios solo si la tabla está vacía
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -51,9 +62,8 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 
 // --------------------
-// RECORD WEATHERFORECAST
+// RECORD WEATHERFORECAST (no modificado)
 // --------------------
-// No modificado, solo se deja como estaba
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
