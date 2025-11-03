@@ -17,10 +17,17 @@ namespace backend.Controllers
 
         // Asigna un permiso a un rol
         [HttpPost]
-        public async Task<ActionResult<RolePermission>> AssignPermission([FromBody] RolePermission rolePermission)
+        public async Task<ActionResult<RolePermission>> AssignPermission([FromBody] AssignRolePermissionRequest req)
         {
-            var assignedPermission = await _rolePermissionService.AssignPermissionToRoleAsync(rolePermission.RoleId, rolePermission.PermissionId);
-            return CreatedAtAction(nameof(GetPermissionsByRole), new { roleId = rolePermission.RoleId }, assignedPermission);
+            try
+            {
+                var assignedPermission = await _rolePermissionService.AssignPermissionToRoleAsync(req.RoleId, req.PermissionId);
+                return CreatedAtAction(nameof(GetPermissionsByRole), new { roleId = req.RoleId }, assignedPermission);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // Elimina un permiso de un rol

@@ -22,7 +22,7 @@ builder.Services.AddControllers()
 // INYECCIÓN DEL DBCONTEXT
 // --------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // --------------------
 // INYECCIÓN DE REPOSITORIOS

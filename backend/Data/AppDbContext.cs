@@ -31,8 +31,34 @@ namespace backend.Data
 
             // Definir clave compuesta para UserRole
              modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
+            modelBuilder.Entity<UserRole>().Property(ur => ur.UserId).ValueGeneratedNever();
+            modelBuilder.Entity<UserRole>().Property(ur => ur.RoleId).ValueGeneratedNever();
+            // Relaciones explícitas para UserRole
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.User)
+                .WithMany()
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.Role)
+                .WithMany(r => r.UserRoles)
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
             // Definir clave compuesta para RolePermission
             modelBuilder.Entity<RolePermission>().HasKey(rp => new { rp.RoleId, rp.PermissionId });
+            modelBuilder.Entity<RolePermission>().Property(rp => rp.RoleId).ValueGeneratedNever();
+            modelBuilder.Entity<RolePermission>().Property(rp => rp.PermissionId).ValueGeneratedNever();
+            // Relaciones explícitas para RolePermission
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Role)
+                .WithMany(r => r.RolePermission)
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Permission)
+                .WithMany(p => p.RolePermissions)
+                .HasForeignKey(rp => rp.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

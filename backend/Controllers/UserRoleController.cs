@@ -17,10 +17,17 @@ namespace backend.Controllers
 
         // POST: api/userrole/assign
         [HttpPost("assign")]
-        public async Task<ActionResult<UserRole>> AssignRole([FromBody] UserRole userRole)
+        public async Task<ActionResult<UserRole>> AssignRole([FromBody] AssignUserRoleRequest req)
         {
-            var assignedRole = await _userRoleService.AssignRoleToUserAsync(userRole.UserId, userRole.RoleId);
-            return CreatedAtAction(nameof(GetRolesByUser), new { userId = userRole.UserId }, assignedRole);
+            try
+            {
+                var assignedRole = await _userRoleService.AssignRoleToUserAsync(req.UserId, req.RoleId);
+                return CreatedAtAction(nameof(GetRolesByUser), new { userId = req.UserId }, assignedRole);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // DELETE: api/userrole/remove
