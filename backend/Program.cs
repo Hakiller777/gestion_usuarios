@@ -1,5 +1,4 @@
 using backend.Data;          // Para AppDbContext
-using backend.Models;
 using backend.Repositories;  // Para los Repositorios
 using backend.Services;      // Para los Servicios
 using Microsoft.EntityFrameworkCore;
@@ -130,7 +129,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization(); // Habilita [Authorize]/[AllowAnonymous] en controladores
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
 
 // --------------------
 // INYECCIÓN DE REPOSITORIOS
