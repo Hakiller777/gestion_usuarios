@@ -1,4 +1,6 @@
 using backend.Models;
+using backend.Domain.ValueObjects;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +24,8 @@ namespace backend.Data
                 users.Add(new User
                 {
                     Name = $"Usuario{i}",
-                    Email = $"usuario{i}@example.com",
-                    Password = "1234" // Para desarrollo solo
+                    Email = Email.Create($"usuario{i}@example.com"),
+                    Password = PasswordHash.FromHashed("1234") // Para desarrollo solo
                 });
             }
             context.Users.AddRange(users);

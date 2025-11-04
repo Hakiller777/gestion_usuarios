@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer; // Middleware para validar 
 using Microsoft.IdentityModel.Tokens; // Tipos para validación/firma de tokens
 using System.Text; // Encoding de la clave simétrica HS256
 using Microsoft.OpenApi.Models; // Swagger: definición de esquema Bearer
+using backend.Domain.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,8 @@ builder.Services.AddSwaggerGen(options => // Swagger: agrega esquema Bearer para
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.Converters.Add(new EmailJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new PasswordHashJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true; // opcional, para que el JSON se vea bonito

@@ -1,5 +1,6 @@
 // Importa los modelos que usaremos en la base de datos
 using backend.Models;
+using backend.Domain.ValueObjects;
 
 // Importa Entity Framework Core para DbContext
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,19 @@ namespace backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Conversions for Value Objects
+            modelBuilder.Entity<User>()
+                .Property(u => u.Email)
+                .HasConversion(
+                    v => v.Value,
+                    v => Email.Create(v));
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Password)
+                .HasConversion(
+                    v => v.Value,
+                    v => PasswordHash.FromHashed(v));
 
             // Definir clave compuesta para UserRole
              modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });

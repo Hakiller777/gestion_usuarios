@@ -16,7 +16,16 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" /> <!--agregamos paquetes para creacion y gestion de usuarios/roles con EFcore-->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" /> <!--agregamos paquete para validad tokens JWT en cada request-->
+  </ItemGroup>
+
+  <!-- Excluir archivos antiguos de Models para evitar tipos duplicados -->
+  <ItemGroup>
+    <Compile Remove="Models\user.cs" />
+    <Compile Remove="Models\Role.cs" />
+    <Compile Remove="Models\Permission.cs" />
+    <Compile Remove="Models\UserRole.cs" />
+    <Compile Remove="Models\RolePermission.cs" />
   </ItemGroup>
 </Project>
