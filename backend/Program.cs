@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer; // Middleware para validar 
 using Microsoft.IdentityModel.Tokens; // Tipos para validación/firma de tokens
 using System.Text; // Encoding de la clave simétrica HS256
 using Microsoft.OpenApi.Models; // Swagger: definición de esquema Bearer
-using backend.Domain.Serialization;
+using backend.Presentation.Serialization;
+using backend.Application.Abstractions;
+using backend.Infrastructure.Services.Auth;
+using backend.Application.Abstractions.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +52,7 @@ builder.Services.AddSwaggerGen(options => // Swagger: agrega esquema Bearer para
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new EmailJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new EmailJsonConverter()); // Convierte Email a string
         options.JsonSerializerOptions.Converters.Add(new PasswordHashJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
@@ -146,6 +149,21 @@ builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<UserRoleService>();
 builder.Services.AddScoped<RolePermissionService>();
+
+// --------------------
+// APPLICATION / INFRASTRUCTURE (AUTH)
+// --------------------
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IJwtProvider, JwtProvider>();
+
+// --------------------
+// APPLICATION / INFRASTRUCTURE (REPOSITORIES)
+// --------------------
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
 
 var app = builder.Build();
 

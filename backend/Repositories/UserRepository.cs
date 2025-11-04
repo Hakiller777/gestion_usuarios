@@ -2,11 +2,12 @@
     using backend.Models;
     using backend.Data;
     using Microsoft.EntityFrameworkCore;
+    using backend.Application.Abstractions.Repositories;
 
     namespace backend.Repositories
     {
         // Clase que maneja la lógica de acceso a datos de los usuarios
-        public class UserRepository
+        public class UserRepository : IUserRepository
         {
             private readonly AppDbContext _context; // Contexto de la DB, inyectado desde Program.cs 
 

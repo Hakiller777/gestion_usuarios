@@ -1,13 +1,13 @@
 using backend.Models;
-using backend.Repositories;
+using backend.Application.Abstractions.Repositories;
 
 namespace backend.Services
 {
     public class UserRoleService
     {
-        private readonly UserRoleRepository _userRoleRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
 
-        public UserRoleService(UserRoleRepository userRoleRepository)
+        public UserRoleService(IUserRoleRepository userRoleRepository)
         {
             _userRoleRepository = userRoleRepository;
         }

@@ -1,5 +1,6 @@
 using backend.Models;
 using backend.Services;
+using backend.Application.Contracts.UserRole;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -17,7 +18,7 @@ namespace backend.Controllers
 
         // POST: api/userrole/assign
         [HttpPost("assign")]
-        public async Task<ActionResult<UserRole>> AssignRole([FromBody] AssignUserRoleRequest req)
+        public async Task<ActionResult<UserRole>> AssignRole([FromBody] backend.Application.Contracts.UserRole.AssignUserRoleRequest req)
         {
             try
             {

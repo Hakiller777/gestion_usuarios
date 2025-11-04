@@ -1,10 +1,11 @@
 using backend.Data;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using backend.Application.Abstractions.Repositories;
 
 namespace backend.Repositories
 {
-    public class RoleRepository
+    public class RoleRepository : IRoleRepository
     {
         private readonly AppDbContext _context;
 

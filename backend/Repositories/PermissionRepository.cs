@@ -1,10 +1,11 @@
 using backend.Data;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using backend.Application.Abstractions.Repositories;
 
 namespace backend.Repositories
 {
-    public class PermissionRepository
+    public class PermissionRepository : IPermissionRepository
     {
         private readonly AppDbContext _context;
 

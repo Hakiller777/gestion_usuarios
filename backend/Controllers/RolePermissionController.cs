@@ -1,5 +1,6 @@
 using backend.Models;
 using backend.Services;
+using backend.Application.Contracts.RolePermission;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -17,7 +18,7 @@ namespace backend.Controllers
 
         // Asigna un permiso a un rol
         [HttpPost]
-        public async Task<ActionResult<RolePermission>> AssignPermission([FromBody] AssignRolePermissionRequest req)
+        public async Task<ActionResult<RolePermission>> AssignPermission([FromBody] backend.Application.Contracts.RolePermission.AssignRolePermissionRequest req)
         {
             try
             {

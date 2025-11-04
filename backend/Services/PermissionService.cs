@@ -1,13 +1,13 @@
 using backend.Models;
-using backend.Repositories;
+using backend.Application.Abstractions.Repositories;
 
 namespace backend.Services
 {
     public class PermissionService
     {
-        private readonly PermissionRepository _permissionRepository;
+        private readonly IPermissionRepository _permissionRepository;
 
-        public PermissionService(PermissionRepository permissionRepository)
+        public PermissionService(IPermissionRepository permissionRepository)
         {
             _permissionRepository = permissionRepository;
         }
