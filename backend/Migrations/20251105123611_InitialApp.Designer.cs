@@ -11,8 +11,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251104143255_RemoveConfirmPasswordFromUsers")]
-    partial class RemoveConfirmPasswordFromUsers
+    [Migration("20251105123611_InitialApp")]
+    partial class InitialApp
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("backend.Models.Permission", b =>
+            modelBuilder.Entity("backend.Domain.Entities.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -42,7 +42,7 @@ namespace backend.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("backend.Models.Role", b =>
+            modelBuilder.Entity("backend.Domain.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -60,7 +60,7 @@ namespace backend.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("backend.Models.RolePermission", b =>
+            modelBuilder.Entity("backend.Domain.Entities.RolePermission", b =>
                 {
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
@@ -75,7 +75,7 @@ namespace backend.Migrations
                     b.ToTable("RolePermissions");
                 });
 
-            modelBuilder.Entity("backend.Models.User", b =>
+            modelBuilder.Entity("backend.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -101,7 +101,7 @@ namespace backend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("backend.Models.UserRole", b =>
+            modelBuilder.Entity("backend.Domain.Entities.UserRole", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -116,15 +116,15 @@ namespace backend.Migrations
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("backend.Models.RolePermission", b =>
+            modelBuilder.Entity("backend.Domain.Entities.RolePermission", b =>
                 {
-                    b.HasOne("backend.Models.Permission", "Permission")
+                    b.HasOne("backend.Domain.Entities.Permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.Role", "Role")
+                    b.HasOne("backend.Domain.Entities.Role", "Role")
                         .WithMany("RolePermission")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -135,15 +135,15 @@ namespace backend.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("backend.Models.UserRole", b =>
+            modelBuilder.Entity("backend.Domain.Entities.UserRole", b =>
                 {
-                    b.HasOne("backend.Models.Role", "Role")
+                    b.HasOne("backend.Domain.Entities.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.User", "User")
+                    b.HasOne("backend.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -154,12 +154,12 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("backend.Models.Permission", b =>
+            modelBuilder.Entity("backend.Domain.Entities.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
                 });
 
-            modelBuilder.Entity("backend.Models.Role", b =>
+            modelBuilder.Entity("backend.Domain.Entities.Role", b =>
                 {
                     b.Navigation("RolePermission");
 

@@ -35,9 +35,9 @@ namespace backend.Controllers
         }
 
         // DELETE: api/userrole/remove
-        [HttpDelete("remove")]
+        [HttpDelete("user/{userId}/role/{roleId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> RemoveRole(int userId, int roleId)
+        public async Task<ActionResult> RemoveRole([FromRoute] int userId, [FromRoute] int roleId)
         {
             var result = await _userRoleService.RemoveRoleFromUserAsync(userId, roleId);
             if (!result)

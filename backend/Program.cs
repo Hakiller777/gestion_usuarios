@@ -156,7 +156,7 @@ builder.Services.AddScoped<RolePermissionService>();
 // APPLICATION / INFRASTRUCTURE (AUTH)
 // --------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddSingleton<IJwtProvider, JwtProvider>();
+builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 
 // --------------------
 // APPLICATION / INFRASTRUCTURE (REPOSITORIES)
@@ -190,6 +190,9 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+    var authDb = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    authDb.Database.Migrate();
     DbSeeder.Seed(db); // Esto solo correrá si la tabla Users está vacía
 }
 

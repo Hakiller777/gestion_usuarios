@@ -1,5 +1,6 @@
 using backend.Domain.Entities;
 using backend.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace backend.Data
             // ---------------------------
             // CREAR ROLES
             // ---------------------------
-            var adminRole = new Role { Name = "Administrador" };
+            var adminRole = new Role { Name = "Admin" };
             var editorRole = new Role { Name = "Editor" };
             var viewerRole = new Role { Name = "Viewer" };
 
@@ -89,6 +90,23 @@ namespace backend.Data
             context.UserRoles.Add(new UserRole { UserId = viewerUser.Id, RoleId = viewerRole.Id });
 
             context.SaveChanges();
+
+            // ---------------------------
+            // USUARIO DE DOMINIO: admin@example.com como Admin
+            // ---------------------------
+            if (!context.Users.Any(u => EF.Property<string>(u, "Email") == "admin@example.com"))
+            {
+                var domainAdmin = new User
+                {
+                    Name = "Admin",
+                    Email = Email.Create("admin@example.com"),
+                    Password = PasswordHash.FromHashed("$2a$11$admin-seeded-hash") // placeholder en dev
+                };
+                context.Users.Add(domainAdmin);
+                context.SaveChanges();
+                context.UserRoles.Add(new UserRole { UserId = domainAdmin.Id, RoleId = adminRole.Id });
+                context.SaveChanges();
+            }
         }
     }
 }
