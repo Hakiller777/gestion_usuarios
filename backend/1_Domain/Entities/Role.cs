@@ -1,4 +1,5 @@
-using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations;
+
 namespace backend.Domain.Entities
 {
     public class Role
@@ -12,7 +13,7 @@ namespace backend.Domain.Entities
 
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
-        public ICollection<RolePermission> RolePermission { get; set; } = new List<RolePermission>();
-        
+        // Nombre plural para consistencia con Permission.RolePermissions
+        public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
     }
 }

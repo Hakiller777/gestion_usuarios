@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations;
 
 namespace backend.Domain.Entities
 {
     // Clase que representa un permiso dentro del sistema
     public class Permission
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El nombre del permiso es obligatorio")]
@@ -13,6 +13,6 @@ namespace backend.Domain.Entities
         public string Name { get; set; } = string.Empty;
 
         // Relación many-to-many con roles
-        public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>(); //TOdos los roles que tienen este permiso
+        public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
     }
 }
