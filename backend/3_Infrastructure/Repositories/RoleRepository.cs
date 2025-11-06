@@ -19,7 +19,7 @@ namespace backend.Repositories
         {
             return await _context.Roles
                 .Include(r => r.UserRoles)
-                .Include(r => r.RolePermission)
+                .Include(r => r.RolePermissions)
                 .ToListAsync();
         }
 
@@ -28,7 +28,7 @@ namespace backend.Repositories
         {
             return await _context.Roles
                 .Include(r => r.UserRoles)
-                .Include(r => r.RolePermission)
+                .Include(r => r.RolePermissions)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 

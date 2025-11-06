@@ -16,10 +16,8 @@ namespace backend.Data
         {
         }
 
-        // DbSet representa una tabla en la base de datos
-        // Cada propiedad DbSet<T> será creada como tabla por EF Core
-        //EF Core se encarga de que la tabla en la Db se llame Users mapeada con la clase User
-        public DbSet<User> Users { get; set; }
+        // DbSet representa una tabl    a en la base de datos
+            public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
@@ -44,7 +42,7 @@ namespace backend.Data
                     v => PasswordHash.FromHashed(v));
 
             // Definir clave compuesta para UserRole
-             modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
+            modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
             modelBuilder.Entity<UserRole>().Property(ur => ur.UserId).ValueGeneratedNever();
             modelBuilder.Entity<UserRole>().Property(ur => ur.RoleId).ValueGeneratedNever();
             // Relaciones explícitas para UserRole
@@ -58,6 +56,7 @@ namespace backend.Data
                 .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
             // Definir clave compuesta para RolePermission
             modelBuilder.Entity<RolePermission>().HasKey(rp => new { rp.RoleId, rp.PermissionId });
             modelBuilder.Entity<RolePermission>().Property(rp => rp.RoleId).ValueGeneratedNever();
@@ -65,7 +64,7 @@ namespace backend.Data
             // Relaciones explícitas para RolePermission
             modelBuilder.Entity<RolePermission>()
                 .HasOne(rp => rp.Role)
-                .WithMany(r => r.RolePermission)
+                .WithMany(r => r.RolePermissions)
                 .HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<RolePermission>()
