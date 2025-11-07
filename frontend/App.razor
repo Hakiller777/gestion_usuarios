@@ -1,0 +1,21 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using frontend.Services
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <p class="text-red-600 text-center mt-4">
+                        No estás autorizado. 
+                        <a href="/login" class="text-blue-600 underline">Inicia sesión</a>
+                    </p>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <p class="text-center mt-4 text-gray-600">Página no encontrada</p>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

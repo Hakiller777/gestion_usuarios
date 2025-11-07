@@ -1,37 +1,55 @@
-using backend.Data;
-using System;
-using System.Diagnostics.Metrics;
+ï»¿using System;
 
 namespace backend.Domain.ValueObjects
 {
-    public sealed record PasswordHash // Value Object inmutable que representa un hash de contraseña
+    /// <summary>
+    /// Value Object inmutable que representa un hash de contraseÃ±a.
+    /// Se usa para garantizar que el valor del hash estÃ© siempre validado y protegido.
+    /// </summary>
+    public sealed record PasswordHash
     {
-        public string Value { get; } // Propiedad pública de solo lectura que almacena el valor del hash de la contraseña
+        /// <summary>
+        /// Valor interno del hash de la contraseÃ±a.
+        /// Es de solo lectura para mantener la inmutabilidad.
+        /// </summary>
+        public string Value { get; }
 
-        private PasswordHash(string value) // Constructor privado para forzar el uso del método de fábrica
+        /// <summary>
+        /// Constructor privado: evita que se creen instancias sin pasar por la validaciÃ³n del mÃ©todo de fÃ¡brica.
+        /// </summary>
+        /// <param name="value">Valor del hash ya procesado.</param>
+        private PasswordHash(string value)
         {
             Value = value;
         }
 
-        public static PasswordHash FromHashed(string hash) // Método de fábrica estático para crear instancias de PasswordHash
+        /// <summary>
+        /// MÃ©todo de fÃ¡brica estÃ¡tico para crear instancias de PasswordHash a partir de un hash existente.
+        /// Garantiza que el valor no sea nulo ni vacÃ­o.
+        /// </summary>
+        /// <param name="hash">Hash de la contraseÃ±a.</param>
+        /// <returns>Instancia vÃ¡lida de <see cref="PasswordHash"/>.</returns>
+        /// <exception cref="ArgumentException">Si el hash estÃ¡ vacÃ­o o solo contiene espacios.</exception>
+        public static PasswordHash FromHashed(string hash)
         {
-            if (string.IsNullOrWhiteSpace(hash)) // Valida que el hash no sea nulo, vacío o solo espacios en blanco
-                throw new ArgumentException("Password hash is required.", nameof(hash)); // Lanza una excepción si la validación falla
-            return new PasswordHash(hash); // Crea y devuelve una nueva instancia de PasswordHash con el valor proporcionado
+            if (string.IsNullOrWhiteSpace(hash))
+                throw new ArgumentException("Password hash is required.", nameof(hash));
+
+            return new PasswordHash(hash);
         }
 
-        public override string ToString() => Value; // Sobrescribe el método ToString para devolver el valor del hash como cadena
+        /// <summary>
+        /// Convierte el objeto a su representaciÃ³n en cadena (el valor del hash).
+        /// </summary>
+        public override string ToString() => Value;
     }
+
+    /*
+     * ðŸ§  Observaciones:
+     * - Si luego vas a manejar el proceso de hasheo dentro del dominio (no solo recibir un hash ya hecho),
+     *   convendrÃ­a agregar un mÃ©todo estÃ¡tico "FromPlainText(string password)" que use BCrypt o similar
+     *   para generar el hash de forma segura.
+     * - TambiÃ©n podrÃ­as implementar una validaciÃ³n para verificar si un texto plano coincide con el hash almacenado.
+     * - No es necesario importar "backend.Data" ni "System.Diagnostics.Metrics" â†’ se eliminaron porque no se usaban.
+     */
 }
-
-
-//Comentarios prácticos y recomendaciones:
-//Responsabilidad: este value object representa el hash; la generación del hash (bcrypt/Argon2/HMAC, etc.) debe ocurrir en un servicio (p. ej. AuthService). Mantener separación evita mezclar hashing con persistencia.
-//Persistencia: AppDbContext usa HasConversion(v => v.Value, v => PasswordHash.FromHashed(v)), por lo que EF persistirá el Value y reconstruirá el value object al leer.
-//Seguridad:
-//Nunca exponer PasswordHash.Value en respuestas públicas ni en logs. Usa DTOs de salida sin contraseña y asegura que cualquier JsonConverter omita o oculte el hash.
-//Evita ToString() en logs de producción; mejor no confiar en que ToString no será usado por terceros.
-//Robustez: FromHashed lanza si recibe valores inválidos. Si existe riesgo de datos corruptos en BD, podrías implementar una conversión más tolerante (p. ej. retornar null o un objeto marcado como inválido), pero eso debilitaría los invariantes del dominio.
-//Extensiones posibles:
-//Añadir un método Verify(plain, hasher) que delegue al servicio de hashing para verificar passwords (aunque preferible mantener verificación en la capa de servicios).
-//Crear FromPlain(string plain, IPasswordHasher) si quieres centralizar hashing en el value object (menos común; suele hacerse en servicios).

@@ -15,13 +15,11 @@ using backend.Application.Abstractions.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => // Swagger: agrega esquema Bearer para pegar el JWT desde la UI
+builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Gestion Usuarios API", Version = "v1" });
 
-    // Definición de seguridad Bearer
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Autenticación JWT. Usa: Bearer {token}",
@@ -32,7 +30,6 @@ builder.Services.AddSwaggerGen(options => // Swagger: agrega esquema Bearer para
         BearerFormat = "JWT"
     });
 
-    // Requisito global: aplicar Bearer por defecto
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -48,25 +45,27 @@ builder.Services.AddSwaggerGen(options => // Swagger: agrega esquema Bearer para
         }
     });
 });
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new EmailJsonConverter()); // Convierte Email a string
+        options.JsonSerializerOptions.Converters.Add(new EmailJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new PasswordHashJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.WriteIndented = true; // opcional, para que el JSON se vea bonito
+        options.JsonSerializerOptions.WriteIndented = true;
     });
 
 // --------------------
-// CORS
+// CORS: agregar localhost:5097 para Blazor WASM
 // --------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", p =>
         p.WithOrigins(
             "http://localhost:5000",
-            "https://localhost:5001"
+            "https://localhost:5001",
+            "http://localhost:5097"   // <-- agregado
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -79,25 +78,24 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// DbContext para ASP.NET Core Identity (tablas AspNetUsers/AspNetRoles/...)
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ASP.NET Core Identity: registra UserManager/SignInManager y almacena en AuthDbContext
+// ASP.NET Core Identity
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<AuthDbContext>()
     .AddDefaultTokenProviders();
 
-// AUTENTICACIÓN JWT: configura validación del token emitido por AuthController
-var jwt = builder.Configuration.GetSection("Jwt"); // Lee Issuer/Audience/Key/Expiración
-var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? ""); // Clave simétrica (HS256)
+// AUTENTICACIÓN JWT
+var jwt = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwt["Key"] ?? "");
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(options => // Middleware que valida el JWT en cada request entrante
+.AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
@@ -112,12 +110,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };
-    // Eventos útiles para diagnóstico de 401 (invalid_token, expiración, etc.)
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
         {
-            // Logea detalle del fallo de autenticación (Development)
             Console.WriteLine($"JWT auth failed: {context.Exception.Message}");
             return Task.CompletedTask;
         },
@@ -135,7 +131,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // --------------------
-// INYECCIÓN DE REPOSITORIOS
+// REPOSITORIOS Y SERVICIOS
 // --------------------
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoleRepository>();
@@ -143,24 +139,15 @@ builder.Services.AddScoped<PermissionRepository>();
 builder.Services.AddScoped<UserRoleRepository>();
 builder.Services.AddScoped<RolePermissionRepository>();
 
-// --------------------
-// INYECCIÓN DE SERVICIOS
-// --------------------
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<UserRoleService>();
 builder.Services.AddScoped<RolePermissionService>();
 
-// --------------------
-// APPLICATION / INFRASTRUCTURE (AUTH)
-// --------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 
-// --------------------
-// APPLICATION / INFRASTRUCTURE (REPOSITORIES)
-// --------------------
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
@@ -169,9 +156,7 @@ builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>(
 
 var app = builder.Build();
 
-// --------------------
 // SWAGGER
-// --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -179,28 +164,24 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("FrontendPolicy"); // Permite al frontend (Blazor) invocar con JWT
-app.UseAuthentication(); // Valida JWT y crea User principal por request
-app.UseAuthorization();  // Aplica políticas/roles sobre endpoints
+app.UseCors("FrontendPolicy"); // CORS actualizado
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
-// --------------------
 // POBLADO INICIAL DE LA BASE DE DATOS
-// --------------------
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
     var authDb = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
     authDb.Database.Migrate();
-    DbSeeder.Seed(db); // Esto solo correrá si la tabla Users está vacía
+    DbSeeder.Seed(db);
 }
 
 app.Run();
 
-// --------------------
 // RECORD WEATHERFORECAST (no modificado)
-// --------------------
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);

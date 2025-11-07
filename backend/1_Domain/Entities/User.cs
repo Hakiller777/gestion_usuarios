@@ -1,44 +1,78 @@
-// Importa las anotaciones para validaciones y claves primarias 
-using backend.Domain.ValueObjects;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; //Atributos de mapeo como [NotMapped] para Shema de EF Core
+// =======================================================
+// Archivo: User.cs
+// Capa: Dominio (Domain)
+// Descripción: Define la entidad principal del sistema — User
+// =======================================================
 
-namespace backend.Domain.Entities //Referenciamos a la carpeta donde estamos 
+using backend.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace backend.Domain.Entities
 {
-    // Clase que representa un usuario dentro del sistema
+    /// <summary>
+    /// Representa un usuario dentro del dominio del sistema.
+    /// Esta clase pertenece a la capa de Dominio y modela los datos
+    /// fundamentales que identifican y describen a un usuario.
+    /// </summary>
     public class User
     {
-        [Key] // Define esta propiedad como la clave primaria de la tabla
-        public int Id { get; set; } // Identificador único del usuario
+        /// <summary>
+        /// Clave primaria — identificador único del usuario.
+        /// </summary>
+        [Key]
+        public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es obligatorio")]
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
-        public string Name { get; set; } = string.Empty;// Nombre completo del usuario
+        /// <summary>
+        /// Nombre completo del usuario.
+        /// </summary>
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres.")]
+        public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El email es obligatorio")]
-        public Email Email { get; set; } = 1; // Se mapea a string vía converter
+        /// <summary>
+        /// Dirección de correo electrónico del usuario.
+        /// Se almacena como un Value Object (Email), que garantiza su formato válido.
+        /// </summary>
+        [Required(ErrorMessage = "El email es obligatorio.")]
+        public Email Email { get; set; } = null!; // Mapeado a string mediante un ValueConverter en la capa de Infraestructura.
 
-        [Required(ErrorMessage = "La contraseña es obligatoria")]
-        public PasswordHash Password { get; set; } = PasswordHash.FromHashed("placeholder"); // Se mapea a string vía converter
+        /// <summary>
+        /// Contraseña encriptada (hash).
+        /// Se encapsula en el Value Object PasswordHash para manejar la lógica de hash y verificación.
+        /// </summary>
+        [Required(ErrorMessage = "La contraseña es obligatoria.")]
+        public PasswordHash Password { get; set; } = PasswordHash.FromHashed("placeholder");
 
-        // Ejemplo opcional: confirmación de contraseña (no se guarda en DB)
-        [NotMapped] //EFcore no lo mira 
+        /// <summary>
+        /// Campo opcional solo usado en validaciones de formularios.
+        /// No se persiste en la base de datos.
+        /// </summary>
+        [NotMapped]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
-}
 
-//Observaciones, buenas prácticas y riesgos:
-//Value objects(Email, PasswordHash) son buenos: centralizan validación y formato. Asegúrate de:
-//Implementar ValueConverter en AppDbContext para persistirlos como string.
-//Usar EmailJsonConverter / PasswordHashJsonConverter para serializar adecuadamente en JSON (ya registrado en Program.cs).
-//Inicializaciones con placeholders son prácticas para cumplir nullability, pero preferible:
-//Proveer constructores/fábricas que obliguen a crear instancias válidas, o
-//Hacer properties init y usar patrones de creación desde servicios para evitar valores por defecto inválidos en runtime.
-//Seguridad:
-//Password debe contener solo hashes; nunca exponer el valor en respuestas JSON. Asegura que PasswordHashJsonConverter no devuelva el hash en endpoints públicos.
-//Considera no incluir Password en DTOs de salida; utiliza DTOs separados para entrada/salida.
-//Validación: los atributos[Required] y [StringLength] funcionan para model binding, pero para reglas de dominio más complejas (p. ej. unicidad de email) implementa validaciones en servicios o en la capa de dominio.
-//Nullability: evitar initializers inseguros; si la intención es que Email siempre sea válido, valida e infórmalo en la fábrica del value object.
+    // =======================================================
+    // OBSERVACIONES Y POSIBLES MEJORAS
+    // =======================================================
+    /*
+     1️⃣  El Value Object Email debería validar formato automáticamente (por ejemplo usando Regex).
+         - Recomendación: Asegurarse de que el ValueConverter esté correctamente configurado en el DbContext.
+     
+     2️⃣  El Value Object PasswordHash debería manejar internamente:
+         - Hashing al crear usuario (con BCrypt o similar)
+         - Verificación de contraseña en métodos como Verify()
+     
+     3️⃣  Agregar relaciones:
+         - Si en el futuro el usuario tiene Roles o Permisos, se podrían agregar propiedades de navegación:
+           Ej: public ICollection<Role> Roles { get; set; } = new List<Role>();
+     
+     4️⃣  Validaciones de dominio:
+         - Actualmente las validaciones son por DataAnnotations (nivel aplicación/presentación).
+         - Se podría agregar validación de dominio en constructores o métodos estáticos para reforzar reglas.
+     
+     5️⃣  Se recomienda crear un constructor protegido o privado + método estático Create() para imponer reglas de creación de usuario:
+         Ejemplo:
+           public static User Create(string name, Email email, PasswordHash password) { ... }
+    */
+}

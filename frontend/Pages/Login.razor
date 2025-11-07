@@ -1,0 +1,106 @@
+﻿@page "/login"
+@using frontend.Services
+@using System.ComponentModel.DataAnnotations
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="max-w-md w-full bg-white shadow-md rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-center mb-6">Iniciar sesión</h2>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="bg-red-100 text-red-800 p-3 rounded mb-4">
+                @ErrorMessage
+            </div>
+        }
+
+        <EditForm Model="LoginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-1">Email</label>
+                <InputText @bind-Value="LoginModel.Email" type="email" 
+                           class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <ValidationMessage For="@(() => LoginModel.Email)" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-1">Contraseña</label>
+                <InputText @bind-Value="LoginModel.Password" type="password"
+                           class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <ValidationMessage For="@(() => LoginModel.Password)" />
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    disabled="@IsSubmitting">
+                @if (IsSubmitting)
+                {
+                    <span>Cargando...</span>
+                }
+                else
+                {
+                    <span>Iniciar sesión</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="text-center mt-4">
+            <a href="/register" class="text-blue-600 hover:underline">¿No tienes cuenta? Regístrate</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginInputModel LoginModel = new();
+    private string ErrorMessage = "";
+    private bool IsSubmitting = false;
+
+    private async Task HandleLogin()
+    {
+        ErrorMessage = "";
+        IsSubmitting = true;
+
+        try
+        {
+            var success = await AuthService.LoginAsync(LoginModel.Email, LoginModel.Password);
+            if (success)
+            {
+                // Obtener token usando el nuevo método GetTokenAsync
+                var token = await AuthService.GetTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    AuthStateProvider.NotifyUserAuthentication(token);
+                }
+
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = "Email o contraseña incorrectos.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error: {ex.Message}";
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    public class LoginInputModel
+    {
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Email no válido")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        public string Password { get; set; } = "";
+    }
+}

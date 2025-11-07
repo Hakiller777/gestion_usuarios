@@ -1,0 +1,58 @@
+@inherits LayoutComponentBase
+@using frontend.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject CustomAuthStateProvider AuthStateProvider
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Mi App</PageTitle>
+
+<div class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
+        <div class="font-bold text-lg">Mi App</div>
+        <div>
+            <AuthorizeView>
+                <Authorized>
+                    <!-- Mostrar email del usuario desde AuthService -->
+                    <span class="mr-4">Bienvenido, @UserEmail</span>
+                    <button class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                            @onclick="Logout">Logout</button>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="mr-4 hover:underline">Login</a>
+                    <a href="/register" class="hover:underline">Register</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="flex-1 p-6 bg-gray-100">
+        @Body
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-3">
+        © 2025 Mi App
+    </footer>
+</div>
+
+@code {
+    private string UserEmail = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener usuario actual desde AuthService
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user != null)
+            UserEmail = user.Email;
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        AuthStateProvider.NotifyUserLogout();
+        Navigation.NavigateTo("/login");
+    }
+}

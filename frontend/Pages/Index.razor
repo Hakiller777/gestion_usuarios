@@ -1,0 +1,54 @@
+@page "/"
+@using frontend.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthService AuthService
+@inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<h3>Dashboard</h3>
+
+@if (IsLoading)
+{
+    <p>Cargando...</p>
+}
+else if (!IsAuthenticated)
+{
+    <p>No estás autorizado. Redirigiendo al login...</p>
+}
+else
+{
+    <p>¡Bienvenido, @UserEmail!</p>
+    <button class="bg-red-600 text-white px-3 py-1 rounded"
+            @onclick="Logout">Cerrar sesión</button>
+}
+
+@code {
+    private string UserEmail = "";
+    private bool IsAuthenticated = false;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Intentar obtener usuario desde token
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user != null)
+        {
+            UserEmail = user.Email;
+            IsAuthenticated = true;
+        }
+        else
+        {
+            // Redirigir al login si no está autenticado
+            Navigation.NavigateTo("/login", true);
+        }
+
+        IsLoading = false;
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        AuthStateProvider.NotifyUserLogout();
+        Navigation.NavigateTo("/login", true);
+    }
+}
