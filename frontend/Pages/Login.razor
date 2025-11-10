@@ -58,49 +58,49 @@
 @code {
     private LoginInputModel LoginModel = new();
     private string ErrorMessage = "";
-    private bool IsSubmitting = false;
+    private bool IsSubmitting = false; //Controla el estado de envío del formulario
 
-    private async Task HandleLogin()
+    private async Task HandleLogin() // Manejador del envío del formulario
     {
-        ErrorMessage = "";
-        IsSubmitting = true;
+        ErrorMessage = ""; // Limpiar mensaje de error previo
+        IsSubmitting = true; // Indicar que el formulario se está enviando
 
         try
         {
-            var success = await AuthService.LoginAsync(LoginModel.Email, LoginModel.Password);
-            if (success)
+            var success = await AuthService.LoginAsync(LoginModel.Email, LoginModel.Password); // Llamar al servicio de autenticación
+            if (success) // Si el login fue exitoso entra aqui
             {
                 // Obtener token usando el nuevo método GetTokenAsync
-                var token = await AuthService.GetTokenAsync();
-                if (!string.IsNullOrEmpty(token))
+                var token = await AuthService.GetTokenAsync(); // Obtener el token JWT a travez del metodo GetTokenAsync desde AuthService
+                if (!string.IsNullOrEmpty(token)) // Si el token no es nulo o vacío
                 {
-                    AuthStateProvider.NotifyUserAuthentication(token);
+                    AuthStateProvider.NotifyUserAuthentication(token); // Notificar al proveedor de estado de autenticación
                 }
 
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/"); // Redirigir al usuario a la página principal
             }
             else
             {
-                ErrorMessage = "Email o contraseña incorrectos.";
+                ErrorMessage = "Email o contraseña incorrectos."; // Mensaje de error genérico si no fue exitoso el login
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) // Capturar cualquier excepción que ocurra durante el proceso
         {
-            ErrorMessage = $"Ocurrió un error: {ex.Message}";
+            ErrorMessage = $"Ocurrió un error: {ex.Message}"; // Mostrar mensaje de error a la hora de iniciar sesión
         }
-        finally
+        finally // Siempre se ejecuta al final del try-catch
         {
-            IsSubmitting = false;
+            IsSubmitting = false; // Restablecer el estado de envío del formulario
         }
     }
 
-    public class LoginInputModel
+    public class LoginInputModel // Modelo de entrada para el formulario de login
     {
-        [Required(ErrorMessage = "El email es obligatorio")]
-        [EmailAddress(ErrorMessage = "Email no válido")]
-        public string Email { get; set; } = "";
+        [Required(ErrorMessage = "El email es obligatorio")] // Validación de campo obligatorio
+        [EmailAddress(ErrorMessage = "Email no válido")] // Validación de formato de email
+        public string Email { get; set; } = ""; // Inicializar con cadena vacía
 
-        [Required(ErrorMessage = "La contraseña es obligatoria")]
-        public string Password { get; set; } = "";
+        [Required(ErrorMessage = "La contraseña es obligatoria")] // Validación de campo obligatorio
+        public string Password { get; set; } = ""; // Inicializar con cadena vacía
     }
 }

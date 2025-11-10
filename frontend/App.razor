@@ -5,7 +5,7 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"> <!--Carga la pagina solo si esta autorizado el usuario-->
                 <NotAuthorized>
                     <p class="text-red-600 text-center mt-4">
                         No estás autorizado. 

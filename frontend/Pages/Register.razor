@@ -1,13 +1,25 @@
 ﻿@page "/register"
 @using frontend.Services
 @using System.ComponentModel.DataAnnotations
+
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
+@* ------------------------------------------------------------
+   Contenedor principal: centramos el formulario en pantalla.
+   Usamos utilidades de Tailwind (clases CSS) para el layout.
+   ------------------------------------------------------------ *@
 <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    @* Caja blanca donde está el formulario (máximo ancho medio). *@
     <div class="max-w-md w-full bg-white shadow-md rounded-lg p-8">
+        @* Título del formulario *@
         <h2 class="text-2xl font-bold text-center mb-6">Crear cuenta</h2>
 
+        @* ---------------------------
+           Mensaje de error global
+           - Solo se muestra si ErrorMessage no está vacío.
+           - Usar para errores que no pertenecen a un campo específico.
+           ---------------------------- *@
         @if (!string.IsNullOrEmpty(ErrorMessage))
         {
             <div class="bg-red-100 text-red-800 p-3 rounded mb-4">
@@ -15,17 +27,34 @@
             </div>
         }
 
+        @* -----------------------------------------
+           EditForm:
+           - Model: objeto que contiene las propiedades enlazadas.
+           - OnValidSubmit: se ejecuta cuando las validaciones pasan.
+           ------------------------------------------ *@
         <EditForm Model="RegisterModel" OnValidSubmit="HandleRegister">
+            @* Habilita validación basada en DataAnnotations (atributos). *@
             <DataAnnotationsValidator />
+            @* Muestra un resumen con todos los errores de validación. *@
             <ValidationSummary />
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-1">Email</label>
-                <InputText @bind-Value="RegisterModel.Email" type="email"
-                           class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500" />
-                <ValidationMessage For="@(() => RegisterModel.Email)" />
-            </div>
+            @* -------------------------
+               Campo: Email
+               - InputText es el componente de Blazor para inputs.
+               - @bind-Value enlaza bidireccionalmente con la propiedad.
+               - ValidationMessage muestra errores específicos del campo.
+               -------------------------- *@
+               <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Email</label>
+                    <InputText @bind-Value="RegisterModel.Email" type="email"
+                               class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <ValidationMessage For="@(() => RegisterModel.Email)" />
+                </div>
 
+            @* -------------------------
+               Campo: Contraseña
+               - type="password" oculta el texto introducido.
+               -------------------------- *@
             <div class="mb-4">
                 <label class="block text-gray-700 font-medium mb-1">Contraseña</label>
                 <InputText @bind-Value="RegisterModel.Password" type="password"
@@ -33,6 +62,10 @@
                 <ValidationMessage For="@(() => RegisterModel.Password)" />
             </div>
 
+            @* -------------------------
+               Campo: Confirmar contraseña
+               - Se valida en el modelo con [Compare(nameof(Password))].
+               -------------------------- *@
             <div class="mb-4">
                 <label class="block text-gray-700 font-medium mb-1">Confirmar Contraseña</label>
                 <InputText @bind-Value="RegisterModel.ConfirmPassword" type="password"
@@ -40,6 +73,11 @@
                 <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
             </div>
 
+            @* -------------------------
+               Botón de envío:
+               - disabled cuando IsSubmitting = true para evitar doble envío.
+               - texto dinámico para indicar carga.
+               -------------------------- *@
             <button type="submit"
                     class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50"
                     disabled="@IsSubmitting">
@@ -54,6 +92,7 @@
             </button>
         </EditForm>
 
+        @* Enlace para ir a la página de login si ya tiene cuenta. *@
         <div class="text-center mt-4">
             <a href="/login" class="text-green-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</a>
         </div>
@@ -61,55 +100,88 @@
 </div>
 
 @code {
+    // Modelo enlazado al formulario. Se inicializa vacío.
     private RegisterInputModel RegisterModel = new();
+
+    // Mensaje global de error que se muestra arriba del formulario.
+    // Evitar mostrar mensajes de error que revelen detalles internos en producción.
     private string ErrorMessage = "";
+
+    // Indicador para deshabilitar el formulario mientras se realiza la petición.
     private bool IsSubmitting = false;
 
+    // Método que maneja el envío del formulario.
+    // Se ejecuta solo si las validaciones (DataAnnotations) del modelo pasan.
     private async Task HandleRegister()
     {
+        // Limpiamos errores previos antes de comenzar.
         ErrorMessage = "";
+
+        // Indicamos que se está procesando para bloquear UI (botón). Cuando esta true esta bloqueado el boton de envio 
         IsSubmitting = true;
 
         try
         {
-            // Validación extra por seguridad
+            // Validación extra en cliente: comprobación que las contraseñas coincidan.
+            // Aunque ya existe [Compare] en el modelo, esta validación evita
+            // que se haga la llamada al servidor si no coinciden (mejor UX).
             if (RegisterModel.Password != RegisterModel.ConfirmPassword)
             {
                 ErrorMessage = "Las contraseñas no coinciden.";
-                return;
+                return; // Salimos sin hacer petición al backend.
             }
 
+            // Llamada al servicio de autenticación para registrar al usuario.
+            // AuthService.RegisterAsync debería:
+            //  - Hacer POST al endpoint del backend.
+            //  - Devolver true/false o lanzar excepción según el caso.
+            //  -Esta es la parte donde se comunica con el backend a travez de AuthService
             var success = await AuthService.RegisterAsync(RegisterModel.Email, RegisterModel.Password);
+
             if (success)
             {
-                // Redirigir a login después de registrarse
+                // Registro exitoso: navegar al login.
+                // Alternativa: mostrar un mensaje de éxito antes de redirigir.
                 Navigation.NavigateTo("/login");
             }
             else
             {
+                // Mensaje genérico si el servicio devuelve false.
+                // Mejor práctica: el servicio podría devolver códigos/errores más detallados (p. ej. email ya existe).
                 ErrorMessage = "No se pudo registrar el usuario.";
             }
         }
         catch (Exception ex)
         {
+            // Atrapar excepciones inesperadas.
+            // IMPORTANTE: en producción no muestres ex.Message directamente al usuario,
+            // podría contener información sensible. Aquí lo dejamos para debugging.
             ErrorMessage = $"Ocurrió un error: {ex.Message}";
         }
         finally
         {
+            // Siempre reactivar el formulario para permitir nuevos intentos.
             IsSubmitting = false;
         }
     }
 
+    // Modelo interno con validaciones (DataAnnotations).
+    // Estas reglas se usan en la validación del EditForm (DataAnnotationsValidator).
     public class RegisterInputModel
     {
+        // Email obligatorio y con formato válido.
         [Required(ErrorMessage = "El email es obligatorio")]
         [EmailAddress(ErrorMessage = "Email no válido")]
         public string Email { get; set; } = "";
 
+        // Contraseña requerida y con longitud mínima.
+        // Ajustar MinLength si tu política de contraseñas requiere más.
         [Required(ErrorMessage = "La contraseña es obligatoria")]
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
         public string Password { get; set; } = "";
 
+        // Campo de confirmación obligatorio.
+        // [Compare] asegura que coincida con la propiedad Password.
         [Required(ErrorMessage = "Debes confirmar la contraseña")]
         [Compare(nameof(Password), ErrorMessage = "Las contraseñas no coinciden")]
         public string ConfirmPassword { get; set; } = "";
