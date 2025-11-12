@@ -12,30 +12,30 @@ namespace frontend.Services
         private readonly ILocalStorageService _localStorage;
         private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-        // Inyectamos IHttpClientFactory para usar el HttpClient nombrado "API"
-        public AuthService(IHttpClientFactory httpFactory, ILocalStorageService localStorage) //Inyecta IHttpClientFactory y ILocalStorageService en el constructor de AuthService
+        // Recibe directamente HttpClient y LocalStorage
+        public AuthService(HttpClient http, ILocalStorageService localStorage)
         {
-            _http = httpFactory.CreateClient("API"); //Crea un HttpClient nombrado "API" para comunicarse con el backend
+            _http = http;
             _localStorage = localStorage;
         }
 
         // ---- LOGIN ----
-        public async Task<bool> LoginAsync(string email, string password) //Aqui es donde se llama al endpoint de login en el backend
+        public async Task<bool> LoginAsync(string email, string password)
         {
-            var response = await _http.PostAsJsonAsync("api/auth/login", new { email, password }); //Aqui se comunica con el bakend para el login 
-            if (!response.IsSuccessStatusCode) return false; //Si la respuesta al bakend no es exitosa, retorna false
+            var response = await _http.PostAsJsonAsync("api/auth/login", new { email, password });
+            if (!response.IsSuccessStatusCode) return false;
 
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>(_jsonOptions); //Aqui se recibe el token del backend y lo convierte en un objeto LoginResponse
-            if (result?.Token is null) return false; //Si el token es nulo, retorna false
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>(_jsonOptions);
+            if (result?.Token is null) return false;
 
-            await _localStorage.SetItemAsync("authToken", result.Token); //Guarda el token en el almacenamiento local del navegador
+            await _localStorage.SetItemAsync("authToken", result.Token);
             _http.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token); //Configura el encabezado de autorizacion para futuras solicitudes HTTP
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
 
-            return true; //Retorna true si el login fue exitoso
+            return true;
         }
 
-        // ---- REGISTER ---- aqui es donde se llama al endpoint de registro en el backend
+        // ---- REGISTER ----
         public async Task<bool> RegisterAsync(string email, string password)
         {
             var response = await _http.PostAsJsonAsync("api/auth/register", new { email, password });
@@ -62,10 +62,9 @@ namespace frontend.Services
         }
 
         // ---- GET TOKEN ----
-        // Esto permite que Login.razor llame a AuthService.GetTokenAsync()
-        public async Task<string?> GetTokenAsync() //Metodo para obtener el token almacenado en el almacenamiento local del navegador
+        public async Task<string?> GetTokenAsync()
         {
-            return await _localStorage.GetItemAsync<string>("authToken"); //Retorna el token almacenado en el almacenamiento local del navegador
+            return await _localStorage.GetItemAsync<string>("authToken");
         }
     }
 

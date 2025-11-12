@@ -6,29 +6,28 @@ using frontend.Services;
 using frontend;
 using System.Net.Http;
 
-var builder = WebAssemblyHostBuilder.CreateDefault(args); // Crea el host de la aplicación Blazor WebAssembly con la configuración predeterminada
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.RootComponents.Add<App>("#app"); // Agrega el componente raíz "App" al elemento con id "app" en el HTML
-builder.RootComponents.Add<HeadOutlet>("head::after"); // Agrega el componente "HeadOutlet" para manejar el contenido del head del HTML
+// Componentes raíz
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Servicios
-builder.Services.AddBlazoredLocalStorage(); // Registro del servicio de almacenamiento local del navegador que usaremos para guardar el token JWT
-
-// Auth
-builder.Services.AddScoped<CustomAuthStateProvider>(); // Registro del proveedor de estado de autenticación personalizado
-builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
-    provider.GetRequiredService<CustomAuthStateProvider>()); // Registro del proveedor de estado de autenticación para que use el personalizado
-builder.Services.AddAuthorizationCore(); // Habilita la autorización en Blazor WebAssembly
-builder.Services.AddScoped<AuthService>(); // Registro del servicio de autenticación (sirve para login, registro, logout, etc.)
-
-// HttpClient nombrado "API" apuntando a tu backend
-builder.Services.AddHttpClient("API", client =>
+// HttpClient para llamadas al backend
+builder.Services.AddScoped(sp => new HttpClient
 {
-    client.BaseAddress = new Uri("http://localhost:5212/"); // Aqui podemos ver la conexion directa con el backend ( El enlace al mismo )
+    BaseAddress = new Uri("http://localhost:5212/") // URL de tu API
 });
 
-// HttpClient genérico (opcional)
-builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IHttpClientFactory>().CreateClient("API")); // Registro de un HttpClient genérico que usa el HttpClient nombrado "API"
+// Blazored LocalStorage
+builder.Services.AddBlazoredLocalStorage();
+
+// Autenticación
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
+    provider.GetRequiredService<CustomAuthStateProvider>());
+builder.Services.AddAuthorizationCore();
+
+// Servicios de autenticación
+builder.Services.AddScoped<AuthService>();
 
 await builder.Build().RunAsync();
