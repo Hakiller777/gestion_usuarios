@@ -1,0 +1,12 @@
+﻿@page "/"
+
+<h3>Hola desde Blazor Server 👋</h3>
+
+<button class="btn btn-primary" @onclick="Contar">
+    Clicks: @contador
+</button>
+
+@code {
+    int contador = 0;
+    void Contar() => contador++;
+}
