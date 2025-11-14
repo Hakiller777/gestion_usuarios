@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorServerApp;
+using BlazorServerApp.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Registramos servicios propios
+builder.Services.AddScoped<TokenService>();
+
+// Registramos un HttpClient tipado para BackendClient
+builder.Services.AddHttpClient<BackendClient>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5212");
+});
 // 2) Servicios Blazor Server (los dejamos por si los necesitamos)
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
