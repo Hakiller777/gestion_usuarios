@@ -55,9 +55,10 @@ namespace backend.Repositories
         public async Task<List<Permission>> GetPermissionsByRoleAsync(int roleId)
         {
             return await _context.RolePermissions
-                .Where(rp => rp.RoleId == roleId)
-                .Select(rp => rp.Permission)
+                .Where(rp => rp.RoleId == roleId && rp.Permission != null)
+                .Select(rp => rp.Permission!)
                 .ToListAsync();
         }
+
     }
 }
