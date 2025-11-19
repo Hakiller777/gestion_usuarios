@@ -1,0 +1,63 @@
+﻿@page "/Account/Login"
+@using System.ComponentModel.DataAnnotations
+@using frontend1.Client.Services
+@using Shared.Models
+@inject AuthClientService AuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Log in</PageTitle>
+
+<h1>Log in</h1>
+
+<FluentGrid>
+    <FluentGridItem xs="12" sm="6">
+        <EditForm Model="Input" OnValidSubmit="LoginUser">
+            <DataAnnotationsValidator />
+            <FluentStack Orientation="Orientation.Vertical">
+                <FluentTextField @bind-Value="Input.Email" Placeholder="name@example.com" Label="Email" Required="true" Style="width: 100%" />
+                <FluentValidationMessage For="() => Input.Email" />
+                
+                <FluentTextField type="password" @bind-Value="Input.Password" Placeholder="password" Label="Password" Required="true" Style="width: 100%" />
+                <FluentValidationMessage For="() => Input.Password" />
+                
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="width: 100%">Log in</FluentButton>
+                
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="text-danger">@ErrorMessage</div>
+                }
+            </FluentStack>
+        </EditForm>
+    </FluentGridItem>
+</FluentGrid>
+
+@code {
+    private string? ErrorMessage;
+    private InputModel Input = new();
+
+    private async Task LoginUser()
+    {
+        ErrorMessage = null;
+        var token = await AuthService.LoginAsync(Input.Email, Input.Password);
+        if (string.IsNullOrEmpty(token))
+        {
+            ErrorMessage = "Invalid login attempt.";
+            return;
+        }
+
+        // Guardar token en LocalStorage
+        await AuthService.SaveTokenAsync(token);
+
+        // Redirigir a la página “Bienvenido”
+        NavigationManager.NavigateTo("/Welcome");
+    }
+
+    private class InputModel
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        public string Password { get; set; } = "";
+    }
+}

@@ -1,0 +1,16 @@
+﻿@page "/Welcome"
+
+@inject AuthClientService AuthService
+
+<h1>Bienvenido!</h1>
+
+<p>Has iniciado sesión correctamente.</p>
+
+@code {
+    private string? Token;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Token = await AuthService.GetTokenAsync();
+    }
+}

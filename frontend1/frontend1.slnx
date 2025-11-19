@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="../Frontend1.Shared/Frontend1.Shared.csproj" />
+  <Project Path="frontend1.Client/frontend1.Client.csproj" />
+  <Project Path="frontend1/frontend1.csproj" />
+</Solution>
